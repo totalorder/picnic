@@ -25,5 +25,5 @@ def getCatalog():
 def index(request):
     catalog = getCatalog()
     ctx = {"FILES_URL": FILES_URL, "albums": [catalog[album_name] for album_name in sorted(catalog.keys(),
-                                                                   key=lambda x: catalog[x]['date'])]}
+                                                                   key=lambda x: catalog[x]['date'], reverse=True)]}
     return render(request, "index.html", ctx)
