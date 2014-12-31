@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Peacecave Tell</title>
+    <title>Bilder</title>
     <link type="text/css" rel="stylesheet" href="{% static "css/bootstrap-3.2.0.css" %}">
     <link type="text/css" rel="stylesheet" href="{% static "css/main.css" %}">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -17,8 +17,10 @@
     <link type="text/css" rel="stylesheet" href="{% static "css/bootstrap-theme-3.2.0.css" %}">
 </head>
 <body>
-
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+<div class="header">
+    <img src="{% static "img/naetet_dark.png" %}"><h1>bilder.deadlock.se</h1>
+</div>
+{% comment %}<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
     <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
@@ -38,6 +40,7 @@
         </div><!--/.nav-collapse -->
     </div>
 </div>
+{% endcomment %}
 
 <div id="content">
     {% block content %}

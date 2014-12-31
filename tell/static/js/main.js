@@ -56,11 +56,10 @@ $(document).ready(function() {
         $lightbox.hide();
     };
 
-    $(".album-thumbnail-link").click(function() {
+    var showLightbox = function(nodeIndex, $thumbnailNodes) {
         var $lightbox = $(".lightbox"),
-            $image = $lightbox.find(".image"),
-            $thumbnailNodes = $(this).parent().find(".album-thumbnail-node"),
-            nodeIndex = parseInt($(this).data("index"));
+            $image = $lightbox.find(".image");
+
         var $scroller = $lightbox.find(".scroller-center");
         var start = Math.min(Math.max(0, nodeIndex - 2), Math.max(0, $thumbnailNodes.length - 5));
         $thumbnailNodes.each(function(idx, thumbnailNode) {
@@ -99,6 +98,13 @@ $(document).ready(function() {
         });
 
         $lightbox.show();
+    };
 
+    $(".album-thumbnail-link").click(function() {
+        showLightbox($(this).parent().find(".album-thumbnail-link").index(this), $(this).parent().find(".album-thumbnail-node"));
+    });
+
+    $(".album-title-link").click(function() {
+        showLightbox(0, $(this).parent().find(".album-thumbnail-node"));
     });
 });

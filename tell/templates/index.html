@@ -3,7 +3,7 @@
    {% for album in albums %}
        <div class="album" xmlns="http://www.w3.org/1999/html">
            <div class="album-thumbnailgroup">
-               <div class="album-title">{{ album.name }}</div>
+               <a class="album-title-link" href="#"><div class="album-title">{{ album.name }}</div></a>
                {% for photo in album.photos|slice:":4" %}
                    <a class="album-thumbnail-link" data-index="{{ forloop.counter0 }}" href="#"><img class="album-thumbnail"
                        src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
