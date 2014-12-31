@@ -86,3 +86,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny'
     ]
 }
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
