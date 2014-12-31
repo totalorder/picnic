@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    $("body").addClass((("ontouchstart" in document.documentElement) ? 'touch' : 'no-touch'));
+
     var scroll = function (direction, nodeIndex, $scrollerNodes) {
         var nextNodeIndex = nodeIndex;
         var currentNodeIndex = nodeIndex;
@@ -48,17 +50,19 @@ $(document).ready(function() {
         }
     };
 
-    var closeLightbox = function ($lightboxClose, $lightbox) {
+    var closeLightbox = function ($lightboxClose, $lightbox, $page) {
         $lightbox.find(".scroller-center").empty();
         $lightboxClose.unbind('click');
         $lightbox.unbind('click');
         $(document).unbind('keydown');
+        $page.show();
         $lightbox.hide();
     };
 
     var showLightbox = function(nodeIndex, $thumbnailNodes) {
         var $lightbox = $(".lightbox"),
-            $image = $lightbox.find(".image");
+            $image = $lightbox.find(".image"),
+            $page = $(".page");
 
         var $scroller = $lightbox.find(".scroller-center");
         var start = Math.min(Math.max(0, nodeIndex - 2), Math.max(0, $thumbnailNodes.length - 5));
@@ -84,12 +88,12 @@ $(document).ready(function() {
         });
 
         $lightbox.find(".lightbox-close").click(function() {
-            closeLightbox($(this), $lightbox);
+            closeLightbox($(this), $lightbox, $page);
         });
 
         $(document).keydown(function(evt) {
             if (evt.which == 27) {
-                closeLightbox($lightbox.find(".lightbox-close"), $lightbox, $image);
+                closeLightbox($lightbox.find(".lightbox-close"), $lightbox, $page);
             } else if (evt.which == 37) {
                 nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image);
             } else if (evt.which == 39) {
@@ -98,6 +102,7 @@ $(document).ready(function() {
         });
 
         $lightbox.show();
+        $page.hide();
     };
 
     $(".album-thumbnail-link").click(function() {
