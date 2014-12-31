@@ -49,7 +49,7 @@ def run(path, reprocess=False):
                                     "%Y:%m:%d %H:%M:%S").isoformat()
                             else:
                                 print "EXIT Date not found for file %s" % photo['file']
-                                photo['date'] = os.path.getctime(full_file_path)
+                                photo['date'] = datetime.fromtimestamp(os.path.getctime(full_file_path)).isoformat()
 
                         if album['date'] is None or album['date'] > photo['date']:
                             album['date'] = photo['date']
