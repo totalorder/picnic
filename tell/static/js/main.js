@@ -101,6 +101,15 @@ $(document).ready(function() {
             }
         });
 
+        var $imageContainer = $lightbox.find(".image-container");
+        $imageContainer.on("swipeleft",function(){
+            nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image);
+        });
+
+        $imageContainer.on("swiperight",function(){
+            nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image);
+        });
+
         $lightbox.show();
         $page.hide();
     };
