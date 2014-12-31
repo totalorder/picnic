@@ -39,12 +39,17 @@ def run(path, reprocess=False):
                                  'name': basename(file_path).lower()}
 
                         with open(full_file_path, "rb") as f:
-                            photo['date'] = datetime.strptime(
-                                str(exifread.process_file(
-                                    f,
-                                    details=False,
-                                    stop_tag="EXIF DateTimeOriginal")["EXIF DateTimeOriginal"]),
-                                "%Y:%m:%d %H:%M:%S").isoformat()
+                            exif_data = exifread.process_file(
+                                f,
+                                details=False,
+                                stop_tag="EXIF DateTimeOriginal")
+                            if "EXIF DateTimeOriginal" in exif_data:
+                                photo['date'] = datetime.strptime(
+                                    str(exif_data["EXIF DateTimeOriginal"]),
+                                    "%Y:%m:%d %H:%M:%S").isoformat()
+                            else:
+                                print "EXIT Date not found for file %s" % photo['file']
+                                photo['date'] = os.path.getctime(full_file_path)
 
                         if album['date'] is None or album['date'] > photo['date']:
                             album['date'] = photo['date']
