@@ -1,5 +1,5 @@
 """
-Django settings for flatfile project.
+Django settings for picnic project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -36,7 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tell'
+    'picnic_frontend'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -49,21 +49,15 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'flatfile.urls'
+ROOT_URLCONF = 'picnic.urls'
 
-WSGI_APPLICATION = 'flatfile.wsgi.application'
+WSGI_APPLICATION = 'picnic.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': "flatfile",
-    #     'USER': "flatfile",
-    #     'PASSWORD': "flatfile"
-    # }
 }
 
 # Internationalization

@@ -3,7 +3,6 @@ import os
 from os import listdir, makedirs
 from os.path import join, exists, isdir, basename, isfile, splitext
 from multiprocessing.pool import ThreadPool
-import time
 
 convert_types = {'thumbnail': "-thumbnail 200x200^ -gravity center -extent 200x200",
                  'medium': "-thumbnail 800"}
