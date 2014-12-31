@@ -1,9 +1,10 @@
+from datetime import datetime
 import json
 import os
 from os import listdir, makedirs
 from os.path import join, exists, isdir, basename, isfile, splitext
 from multiprocessing.pool import ThreadPool
-
+import exifread
 convert_types = {'thumbnail': "-thumbnail 200x200^ -gravity center -extent 200x200",
                  'medium': "-thumbnail 800"}
 file_extensions = {'.png', '.jpeg', '.jpg'}
@@ -17,7 +18,7 @@ def run(path, reprocess=False):
             album = {
                 'name': basename(album_dir),
                 'photos': [],
-                'date': os.path.getctime(album_dir)
+                'date': None
             }
 
             files_to_convert = {}
@@ -34,8 +35,20 @@ def run(path, reprocess=False):
                     if lower_extension in file_extensions:
                         photo = {'file': "/".join((album_dir, file_path)),
                                  'convert_types': {},
-                                 'date': os.path.getctime(full_file_path),
+                                 'date': None,
                                  'name': basename(file_path).lower()}
+
+                        with open(full_file_path, "rb") as f:
+                            photo['date'] = datetime.strptime(
+                                str(exifread.process_file(
+                                    f,
+                                    details=False,
+                                    stop_tag="EXIF DateTimeOriginal")["EXIF DateTimeOriginal"]),
+                                "%Y:%m:%d %H:%M:%S").isoformat()
+
+                        if album['date'] is None or album['date'] > photo['date']:
+                            album['date'] = photo['date']
+
                         for convert_type in convert_types:
 
                             convert_file = join(album_dir, convert_type, basename(file_path))
@@ -57,7 +70,8 @@ def run(path, reprocess=False):
                     )
                     convert_jobs.append(command)
 
-            albums[album_dir] = album
+            if album['photos']:
+                albums[album_dir] = album
 
     class Counter:
         def __init__(self):
@@ -65,12 +79,13 @@ def run(path, reprocess=False):
     counter = Counter()
     numfiles = len(convert_jobs)
 
-    def parallel(cmd):
-        os.system(cmd)
-        counter.count += 1
-        print "Processed %s of %s files" % (counter.count, numfiles)
-    threadpool = ThreadPool(5)
-    threadpool.map(parallel, convert_jobs)
+    if numfiles:
+        def parallel(cmd):
+            os.system(cmd)
+            counter.count += 1
+            print "Processed %s of %s files" % (counter.count, numfiles)
+        threadpool = ThreadPool(5)
+        threadpool.map(parallel, convert_jobs)
 
     with open("catalog.json", "w") as f:
         json.dump(albums, f, sort_keys=True, indent=2)

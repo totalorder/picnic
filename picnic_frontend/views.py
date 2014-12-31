@@ -14,9 +14,9 @@ def getCatalog():
         response = urlopen(CATALOG_URL)
         CATALOG = json.load(response)
         for album in CATALOG.values():
-            album['date'] = datetime.fromtimestamp(album['date'])
+            album['date'] = datetime.strptime(album['date'], "%Y-%m-%dT%H:%M:%S")
             for photo in album['photos']:
-                photo['date'] = datetime.fromtimestamp(photo['date'])
+                photo['date'] = datetime.strptime(photo['date'], "%Y-%m-%dT%H:%M:%S")
 
             album['photos'].sort(key=lambda x: x['date'])
     return CATALOG
