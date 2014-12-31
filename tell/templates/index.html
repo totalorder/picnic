@@ -5,14 +5,14 @@
            <div class="album-thumbnailgroup">
                <div class="album-title">{{ album.name }}</div>
                {% for photo in album.photos|slice:":4" %}
-                   <a class="album-thumbnail-link" href="#"><img class="album-thumbnail"
+                   <a class="album-thumbnail-link" data-index="{{ forloop.counter0 }}" href="#"><img class="album-thumbnail"
                        src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
                        data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}"/></a>
                {% endfor %}
                {% for photo in album.photos %}
-                   <img class="album-thumbnail-node hidden"
+                   <a class="album-thumbnail-link album-thumbnail-node hidden" href="#"><img
                        src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
-                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}" />
+                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}" /></a>
                {% endfor %}
            </div>
        </div>
@@ -32,6 +32,7 @@
             </div>
             <img src="" class="image" />
         </div>
+        <span class="lightbox-close glyphicon glyphicon-remove" aria-hidden="true"></span>
         <div class="scroller">
             <div class="scroller-center">
             </div>

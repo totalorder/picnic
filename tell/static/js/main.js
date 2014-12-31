@@ -1,23 +1,104 @@
 $(document).ready(function() {
+    var scroll = function (direction, nodeIndex, $scrollerNodes) {
+        var nextNodeIndex = nodeIndex;
+        var currentNodeIndex = nodeIndex;
+        for (var i = 0; i < Math.abs(direction); i++) {
+            currentNodeIndex = nextNodeIndex;
+            nextNodeIndex = nextNodeIndex + (direction > 0 ? 1 : -1);
+            if (nextNodeIndex < currentNodeIndex && nextNodeIndex - 2 >= 0) {
+                $($scrollerNodes[nextNodeIndex - 2]).removeClass("hidden");
+                if (nextNodeIndex + 3 < $scrollerNodes.length) {
+                    $($scrollerNodes[nextNodeIndex + 3]).addClass("hidden");
+                }
+            } else if (nextNodeIndex > currentNodeIndex && nextNodeIndex + 2 < $scrollerNodes.length) {
+                $($scrollerNodes[nextNodeIndex + 2]).removeClass("hidden");
+                if (nextNodeIndex - 3 >= 0) {
+                    $($scrollerNodes[nextNodeIndex - 3]).addClass("hidden");
+                }
+            } else {
+                return;
+            }
+        }
+    };
+
+    var changeImage = function(direction, nodeIndex, $scrollerNodes, $lightbox, $image) {
+        var newNodeIndex = nodeIndex + direction;
+        if (newNodeIndex >= 0 && newNodeIndex < $scrollerNodes.length) {
+            $image.attr("src", $($scrollerNodes[newNodeIndex]).find("img").data("size-medium"));
+
+            if (newNodeIndex == 0) {
+                $lightbox.find(".navblock.left").addClass("hidden");
+            } else {
+                $lightbox.find(".navblock.left").removeClass("hidden");
+            }
+
+            if (newNodeIndex == $scrollerNodes.length - 1) {
+                $lightbox.find(".navblock.right").addClass("hidden");
+            } else {
+                $lightbox.find(".navblock.right").removeClass("hidden");
+            }
+
+            $($scrollerNodes[nodeIndex]).removeClass("active");
+            $($scrollerNodes[newNodeIndex]).addClass("active");
+
+            scroll(direction, nodeIndex, $scrollerNodes);
+            return newNodeIndex;
+        } else {
+            return nodeIndex;
+        }
+    };
+
+    var closeLightbox = function ($lightboxClose, $lightbox) {
+        $lightbox.find(".scroller-center").empty();
+        $lightboxClose.unbind('click');
+        $lightbox.unbind('click');
+        $(document).unbind('keydown');
+        $lightbox.hide();
+    };
+
     $(".album-thumbnail-link").click(function() {
         var $lightbox = $(".lightbox"),
-            $image = $lightbox.find(".image");
-        $image.attr("src", $(this).children("img").data("size-medium"));
-
+            $image = $lightbox.find(".image"),
+            $thumbnailNodes = $(this).parent().find(".album-thumbnail-node"),
+            nodeIndex = parseInt($(this).data("index"));
         var $scroller = $lightbox.find(".scroller-center");
-        $scroller.empty();
-        $(this).parent().find(".album-thumbnail-node").each(function(idx, thumbnailNode) {
+        var start = Math.min(Math.max(0, nodeIndex - 2), Math.max(0, $thumbnailNodes.length - 5));
+        $thumbnailNodes.each(function(idx, thumbnailNode) {
             var $thumbnailNodeClone = $(thumbnailNode).clone();
             $scroller.append($thumbnailNodeClone);
-            if(idx < 5) {
+            if(idx >= start && idx < start + 5) {
                 $thumbnailNodeClone.toggleClass("hidden");
             }
         });
 
-        $lightbox.show();
-        $lightbox.click(function() {
-           $lightbox.unbind('click');
-           $lightbox.hide();
+        var $scrollerNodes = $scroller.find(".album-thumbnail-node");
+        $scrollerNodes.click(function() {
+            nodeIndex = changeImage($scrollerNodes.index(this) - nodeIndex, nodeIndex, $scrollerNodes, $lightbox, $image);
         });
+
+        nodeIndex = changeImage(0, nodeIndex, $scrollerNodes, $lightbox, $image);
+
+        $lightbox.find(".navblock").click(function(evt) {
+            evt.stopPropagation();
+            var direction = $(this).hasClass("right") ? 1 : -1;
+            nodeIndex = changeImage(direction, nodeIndex, $scrollerNodes, $lightbox, $image);
+        });
+
+        $lightbox.find(".lightbox-close").click(function() {
+            closeLightbox($(this), $lightbox);
+        });
+
+        $(document).keydown(function(evt) {
+            if (evt.which == 27) {
+                closeLightbox($lightbox.find(".lightbox-close"), $lightbox, $image);
+            } else if (evt.which == 37) {
+                nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image);
+            } else if (evt.which == 39) {
+                nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image);
+            }
+        });
+
+        $lightbox.show();
+
     });
 });
