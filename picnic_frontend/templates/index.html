@@ -1,20 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
-   {% for album in albums %}
-       <div class="album" xmlns="http://www.w3.org/1999/html">
-           <div class="album-thumbnailgroup">
-               <a class="album-title-link" href="#"><div class="album-title">{{ album.name }}</div></a>
-               {% for photo in album.photos|slice:":4" %}
-                   <a class="album-thumbnail-link" data-index="{{ forloop.counter0 }}" href="#"><img class="album-thumbnail"
-                       src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
-                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}"/></a>
-               {% endfor %}
-               {% for photo in album.photos %}
-                   <a class="album-thumbnail-link album-thumbnail-node hidden" href="#"><img
-                       src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
-                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}" /></a>
-               {% endfor %}
-           </div>
+   {% for year in years %}
+       <div class="year">
+           {% for month in year.1 %}
+               <div class="month">
+                   {% for album in month.1 %}
+                       <div class="album" xmlns="http://www.w3.org/1999/html">
+                           <div class="album-thumbnailgroup">
+                               <a class="album-title-link" href="#"><div class="album-title">{{ album.name }}</div></a>
+                               {% for photo in album.photos|slice:":4" %}
+                                   <a class="album-thumbnail-link" data-index="{{ forloop.counter0 }}" href="#"><img class="album-thumbnail"
+                                       src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
+                                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}"/></a>
+                               {% endfor %}
+                               {% for photo in album.photos %}
+                                   <a class="album-thumbnail-link album-thumbnail-node hidden" href="#"><img
+                                       src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
+                                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}" /></a>
+                               {% endfor %}
+                           </div>
+                       </div>
+                   {% endfor %}
+                   <div class="month-title {% if forloop.counter0 == 0 %}first{% endif %}">{{ month.0 }}</div>
+               </div>
+           {% endfor %}
+           <div class="year-title">{{ year.0 }}</div>
        </div>
    {% endfor %}
 {% endblock %}

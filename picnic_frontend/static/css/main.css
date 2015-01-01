@@ -24,6 +24,7 @@ body {
 }
 
 .album-thumbnailgroup {
+    margin-bottom: -10px;
 }
 
 .album-thumbnail {
@@ -43,19 +44,54 @@ body {
     top: -1px;
     left: -1px;
     font-size: 200%;
+    max-width: 70%;
     background-color: #222222;
     padding: 0px 15px 3px 0;
     display: inline-block;
 }
 
+.year {
+    position: relative;
+    border-right-style: solid;
+    border-right-color: #606060;
+    border-right-width: 5px;
+}
+
+.year-title {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 200%;
+    background-color: #606060;
+    padding: 0px 10px 3px 10px;
+    display: inline-block;
+}
+
+.month {
+    position: relative;
+}
+
+.month-title {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 130%;
+    color: #606060;
+    background-color: #333;
+    padding: 0px 10px 3px 10px;
+    display: inline-block;
+}
+
+.month-title.first {
+    top: 2.39em;
+}
+
 .album-thumbnail:hover {
-    outline: 2px solid #606060;
-    outline-offset: -2px;
+    box-shadow: 0 2px 0 #999999;
 }
 
 .lightbox {
     display: none;
-    /*position: absolute;*/
     top: 0;
     left: 0;
     width: 100%;
@@ -163,13 +199,11 @@ body {
 }
 
 .album-thumbnail-node.active img {
-    outline: 2px solid lightgray;
-    outline-offset: -2px;
+    box-shadow: 0 2px 0 lightgray !important;
 }
 
 .album-thumbnail-node img:hover {
-    outline: 2px solid #606060;
-    outline-offset: -2px;
+    box-shadow: 0 2px 0 #999999;
 }
 
 .album-title-link {
