@@ -1,18 +1,17 @@
 from collections import defaultdict
 from datetime import datetime
 from urllib2 import urlopen
+from django.conf import settings
 from django.shortcuts import render
 import json
 
-CATALOG_URL = "http://192.168.0.115:8001/catalog.json"
-
 CATALOG = None
-FILES_URL = CATALOG_URL[:CATALOG_URL.rindex("/") + 1]
+FILES_URL = settings.CATALOG_URL[:settings.CATALOG_URL.rindex("/") + 1]
 
 def getCatalog():
     global CATALOG
     if CATALOG is None:
-        response = urlopen(CATALOG_URL)
+        response = urlopen(settings.CATALOG_URL)
         CATALOG = json.load(response)
         for album in CATALOG.values():
             album['date'] = datetime.strptime(album['date'], "%Y-%m-%dT%H:%M:%S")

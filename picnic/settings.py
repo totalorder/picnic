@@ -88,3 +88,5 @@ REST_FRAMEWORK = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
+
+CATALOG_URL = "http://192.168.0.115:8001/catalog.json"
