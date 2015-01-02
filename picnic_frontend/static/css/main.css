@@ -1,15 +1,10 @@
 body {
-    background-color: #222222;
+    background-color: #1d1d1d;
 }
 
 .header {
     padding: 10px;
     border-bottom: 2px solid #454545;
-}
-
-.header img {
-    /*display: inline-block;*/
-
 }
 
 .header h1 {
@@ -23,6 +18,11 @@ body {
     padding: 10px;
 }
 
+.page {
+    max-width: 877px;
+    margin: auto;
+    background-color: #222222;
+}
 .album-thumbnailgroup {
     margin-bottom: -10px;
 }
