@@ -1,6 +1,8 @@
 $(document).ready(function() {
     $("body").addClass((("ontouchstart" in document.documentElement) ? 'touch' : 'no-touch'));
 
+    var lightbox = null;
+
     var scroll = function (direction, nodeIndex, $scrollerNodes) {
         var nextNodeIndex = nodeIndex;
         var currentNodeIndex = nodeIndex;
@@ -23,7 +25,7 @@ $(document).ready(function() {
         }
     };
 
-    var changeImage = function(direction, nodeIndex, $scrollerNodes, $lightbox, $image) {
+    var changeImage = function(direction, nodeIndex, $scrollerNodes, $lightbox, $image, $album, noNavigate) {
         var newNodeIndex = nodeIndex + direction;
         if (newNodeIndex >= 0 && newNodeIndex < $scrollerNodes.length) {
             $image.attr("src", $($scrollerNodes[newNodeIndex]).find("img").data("size-medium"));
@@ -44,22 +46,71 @@ $(document).ready(function() {
             $($scrollerNodes[newNodeIndex]).addClass("active");
 
             scroll(direction, nodeIndex, $scrollerNodes);
+            if (!noNavigate) {
+                navigated($album, newNodeIndex);
+            }
             return newNodeIndex;
         } else {
             return nodeIndex;
         }
     };
 
-    var closeLightbox = function ($lightboxClose, $lightbox, $page) {
+    var closeLightbox = function ($lightboxClose, $lightbox, $page, noNavigate) {
         $lightbox.find(".scroller-center").empty();
         $lightboxClose.unbind('click');
         $lightbox.unbind('click');
+        $lightbox.find(".navblock").unbind('click');
+        $lightbox.find(".image-container").unbind("swipeleft");
+        $lightbox.find(".image-container").unbind("swiperight");
         $(document).unbind('keydown');
-        $page.show();
+        $page.removeClass("hidden");
         $lightbox.hide();
+        lightbox = null;
+        if (!noNavigate) {
+            navigated(null, null);
+        }
     };
 
-    var showLightbox = function(nodeIndex, $thumbnailNodes) {
+    var navigated = function ($album, nodeIndex) {
+        if ($album === null) {
+            //console.log("Navigated: null /");
+            history.pushState(null, "Bilder", "/");
+        }
+        else if (nodeIndex === null) {
+            //console.log("Navigated: {albumSlug: " + $album.data('slug') + ", nodeIndex: null} /" + $album.data('title'), "/" + $album.data('slug') + "/" )
+            history.pushState({"albumSlug": $album.data('slug'), "nodeIndex": null}, $album.data('title'), "/" + $album.data('slug') + "/");
+        } else {
+            //console.log("Navigated: {albumSlug: " + $album.data('slug') + ", nodeIndex: " + nodeIndex + "} /" + $album.data('slug') + "/" + (nodeIndex + 1) + "/")
+            history.pushState({"albumSlug": $album.data('slug'), "nodeIndex": nodeIndex}, $album.data('title'), "/" + $album.data('slug') + "/" + (nodeIndex + 1) + "/");
+        }
+    };
+
+    $(window).bind('popstate', function(evt) {
+        //console.log(location.href);
+        //console.log(evt.originalEvent.state);
+        if (evt.originalEvent.state === null) {
+            if (lightbox !== null) {
+                closeLightbox(lightbox.getLightboxClose(), lightbox.getLightbox(), lightbox.getPage(), true);
+            }
+        } else if (lightbox !== null && evt.originalEvent.state.albumSlug === lightbox.getAlbum().data('slug')) {
+            var evtNodeIndex = evt.originalEvent.state.nodeIndex === null ? 0 : evt.originalEvent.state.nodeIndex;
+            lightbox.setNodeIndex(changeImage(evtNodeIndex - lightbox.getNodeIndex(),
+                lightbox.getNodeIndex(), lightbox.getScrollerNodes(),
+                lightbox.getLightbox(), lightbox.getImage(), lightbox.getAlbum(), true));
+        } else if (lightbox === null ) {
+            var $album = $('.album[data-slug="' + evt.originalEvent.state.albumSlug + '"]');
+            lightbox = showLightbox($album, $album.find(".album-thumbnail-node"), evt.originalEvent.state.nodeIndex, true);
+        }
+    });
+
+    var showLightbox = function($album, $thumbnailNodes, nodeIndex, noNavigate) {
+        if (!noNavigate) {
+            navigated($album, nodeIndex);
+        }
+        if (nodeIndex === null) {
+            nodeIndex = 0;
+        }
+
         var $lightbox = $(".lightbox"),
             $image = $lightbox.find(".image"),
             $page = $(".page");
@@ -75,39 +126,42 @@ $(document).ready(function() {
         });
 
         var $scrollerNodes = $scroller.find(".album-thumbnail-node");
-        $scrollerNodes.click(function() {
-            nodeIndex = changeImage($scrollerNodes.index(this) - nodeIndex, nodeIndex, $scrollerNodes, $lightbox, $image);
+        $scrollerNodes.click(function(evt) {
+            evt.preventDefault();
+            nodeIndex = changeImage($scrollerNodes.index(this) - nodeIndex, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
         });
 
-        nodeIndex = changeImage(0, nodeIndex, $scrollerNodes, $lightbox, $image);
+        nodeIndex = changeImage(0, nodeIndex, $scrollerNodes, $lightbox, $image, $album, true);
 
         $lightbox.find(".navblock").click(function(evt) {
-            evt.stopPropagation();
+            evt.preventDefault();
             var direction = $(this).hasClass("right") ? 1 : -1;
-            nodeIndex = changeImage(direction, nodeIndex, $scrollerNodes, $lightbox, $image);
+            nodeIndex = changeImage(direction, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
         });
 
-        $lightbox.find(".lightbox-close").click(function() {
-            closeLightbox($(this), $lightbox, $page);
+        var $lightboxClose = $lightbox.find(".lightbox-close");
+
+        $lightboxClose.click(function() {
+            closeLightbox($lightboxClose, $lightbox, $page);
         });
 
         $(document).keydown(function(evt) {
             if (evt.which == 27) {
-                closeLightbox($lightbox.find(".lightbox-close"), $lightbox, $page);
+                closeLightbox($lightboxClose, $lightbox, $page);
             } else if (evt.which == 37) {
-                nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image);
+                nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
             } else if (evt.which == 39) {
-                nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image);
+                nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
             }
         });
 
         var $imageContainer = $lightbox.find(".image-container");
         $imageContainer.on("swipeleft",function(){
-            nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image);
+            nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
         });
 
         $imageContainer.on("swiperight",function(){
-            nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image);
+            nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
         });
 
         var $infoButton = $lightbox.find(".lightbox-info-button");
@@ -120,7 +174,7 @@ $(document).ready(function() {
         $infoButton.show();
 
         $infoButton.click(function(evt) {
-            evt.stopPropagation();
+            evt.preventDefault();
             $infoBox.empty();
             var $photoInfoClone = $($scrollerNodes[nodeIndex]).find(".photo-info").clone();
             $photoInfoClone.find("aa").each(function(idx, aAnchor) {
@@ -141,21 +195,46 @@ $(document).ready(function() {
         });
 
         $infoButtonClose.click(function(evt) {
-            evt.stopPropagation();
+            evt.preventDefault();
             $infoButton.show();
             $infoButtonClose.addClass("hidden");
             $infoBox.addClass("hidden");
         });
 
         $lightbox.show();
-        $page.hide();
+        $page.addClass("hidden");
+
+        return {
+            "getNodeIndex": function() { return nodeIndex; },
+            "setNodeIndex": function(newNodeIndex) { nodeIndex = newNodeIndex; },
+            "getScrollerNodes": function() { return $scrollerNodes },
+            "getLightbox": function() { return $lightbox },
+            "getImage": function() { return $image },
+            "getAlbum": function() { return $album },
+            "getLightboxClose": function() { return $lightboxClose },
+            "getPage": function() { return $page }
+        }
     };
 
-    $(".album-thumbnail-link").click(function() {
-        showLightbox($(this).parent().find(".album-thumbnail-link").index(this), $(this).parent().find(".album-thumbnail-node"));
+    $(".album-thumbnail-link").click(function(evt) {
+        evt.preventDefault();
+        var $albumThumbnailGroup = $(this).parent();
+        lightbox = showLightbox($albumThumbnailGroup.parent(), $(this).parent().find(".album-thumbnail-node"), $albumThumbnailGroup.find(".album-thumbnail-link").index(this));
     });
 
-    $(".album-title-link").click(function() {
-        showLightbox(0, $(this).parent().find(".album-thumbnail-node"));
+    $(".album-title-link").click(function(evt) {
+        evt.preventDefault();
+        var $albumThumbnailGroup = $(this).parent();
+        lightbox = showLightbox($albumThumbnailGroup.parent(), $albumThumbnailGroup.find(".album-thumbnail-node"), null);
     });
+
+    var _$lighbox = $(".lightbox");
+    var _$album;
+    if(_$lighbox.data('album-slug') && _$lighbox.data('node-index')) {
+        _$album = $('.album[data-slug="' + _$lighbox.data('album-slug') + '"]');
+        lightbox = showLightbox(_$album, _$album.find(".album-thumbnail-node"), _$lighbox.data('node-index'), true);
+    } else if (_$lighbox.data('album-slug')) {
+        _$album = $('.album[data-slug="' + _$lighbox.data('album-slug') + '"]');
+        lightbox = showLightbox(_$album, _$album.find(".album-thumbnail-node"), null, true);
+    }
 });

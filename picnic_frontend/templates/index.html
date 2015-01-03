@@ -5,16 +5,16 @@
            {% for month in year.1 %}
                <div class="month">
                    {% for album in month.1 %}
-                       <div class="album" xmlns="http://www.w3.org/1999/html">
+                       <div class="album" data-title="{{ album.name }}" data-slug="{{ album.name|slugify }}">
                            <div class="album-thumbnailgroup">
-                               <a class="album-title-link" href="#"><div class="album-title">{{ album.name }}</div></a>
+                               <a class="album-title-link" href=""><div class="album-title">{{ album.name }}</div></a>
                                {% for photo in album.photos|slice:":4" %}
-                                   <a class="album-thumbnail-link" data-index="{{ forloop.counter0 }}" href="#"><img class="album-thumbnail"
+                                   <a class="album-thumbnail-link" data-index="{{ forloop.counter0 }}" href=""><img class="album-thumbnail"
                                        src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
                                        data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}"/></a>
                                {% endfor %}
                                {% for photo in album.photos %}
-                                   <a class="album-thumbnail-link album-thumbnail-node hidden" href="#"><img
+                                   <a class="album-thumbnail-link album-thumbnail-node hidden" href=""><img
                                        src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
                                        data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}" /><div class="photo-info hidden">
                                        {{ photo.name }} ({{ photo.date|date:"Y-m-d H:i" }})<br />
@@ -33,7 +33,9 @@
 {% endblock %}
 
 {% block outside-page %}
-    <div class="lightbox">
+    <div class="lightbox"
+            {% if album_slug %} data-album-slug="{{ album_slug }}"{% endif %}
+            {% if node_index %} data-node-index="{{ node_index }}"{% endif %}>
         <div class="image-container">
             <div class="navblock left">
                 <span class="navblock-center">

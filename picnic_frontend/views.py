@@ -22,7 +22,7 @@ def getCatalog():
     return CATALOG
 
 
-def index(request):
+def index(request, album_slug=None, node_index=None):
     catalog = getCatalog()
     year_month_map = defaultdict(lambda: defaultdict(lambda: []))
     for album in sorted(catalog.values(),
@@ -50,5 +50,7 @@ def index(request):
     ctx = {"FILES_URL": FILES_URL,
            "albums": [catalog[album_name] for album_name in sorted(catalog.keys(),
                                                                    key=lambda x: catalog[x]['date'], reverse=True)],
-           "years": years}
+           "years": years,
+           "album_slug": album_slug,
+           "node_index": int(node_index) - 1 if node_index is not None else None}
     return render(request, "index.html", ctx)

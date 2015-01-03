@@ -17,7 +17,7 @@
     <link type="text/css" rel="stylesheet" href="{% static "css/bootstrap-theme-3.2.0.css" %}">
 </head>
 <body>
-<div class="page">
+<div class="page{% if album_slug %} hidden{% endif %}">
     <div class="header">
         <img src="{% static "img/naetet_dark.png" %}"><h1>bilder.deadlock.se</h1>
     </div>
