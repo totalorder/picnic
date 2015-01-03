@@ -25,7 +25,7 @@ $(document).ready(function() {
         }
     };
 
-    var changeImage = function(direction, nodeIndex, $scrollerNodes, $lightbox, $image, $album, noNavigate) {
+    var changeImage = function(direction, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox, noNavigate) {
         var newNodeIndex = nodeIndex + direction;
         if (newNodeIndex >= 0 && newNodeIndex < $scrollerNodes.length) {
             $image.attr("src", $($scrollerNodes[newNodeIndex]).find("img").data("size-medium"));
@@ -48,6 +48,10 @@ $(document).ready(function() {
             scroll(direction, nodeIndex, $scrollerNodes);
             if (!noNavigate) {
                 navigated($album, newNodeIndex);
+            }
+
+            if (!$infoBox.hasClass("hidden")) {
+                updateInfoBox($infoBox, $scrollerNodes, newNodeIndex);
             }
             return newNodeIndex;
         } else {
@@ -96,12 +100,28 @@ $(document).ready(function() {
             var evtNodeIndex = evt.originalEvent.state.nodeIndex === null ? 0 : evt.originalEvent.state.nodeIndex;
             lightbox.setNodeIndex(changeImage(evtNodeIndex - lightbox.getNodeIndex(),
                 lightbox.getNodeIndex(), lightbox.getScrollerNodes(),
-                lightbox.getLightbox(), lightbox.getImage(), lightbox.getAlbum(), true));
+                lightbox.getLightbox(), lightbox.getImage(), lightbox.getAlbum(), lightbox.getInfoBox(), true));
         } else if (lightbox === null ) {
             var $album = $('.album[data-slug="' + evt.originalEvent.state.albumSlug + '"]');
             lightbox = showLightbox($album, $album.find(".album-thumbnail-node"), evt.originalEvent.state.nodeIndex, true);
         }
     });
+
+    function updateInfoBox($infoBox, $scrollerNodes, nodeIndex) {
+        $infoBox.empty();
+        var $photoInfoClone = $($scrollerNodes[nodeIndex]).find(".photo-info").clone();
+        $photoInfoClone.find("aa").each(function (idx, aAnchor) {
+            var anchor = $("<a></a>")[0];
+            anchor.className = aAnchor.className;
+            $.extend(anchor.classList, aAnchor.classList);
+            $(anchor).attr('href', $(aAnchor).attr('href'));
+            $(anchor).addClass(aAnchor.className);
+            $(aAnchor).wrapAll($(anchor));
+            $(aAnchor).contents().unwrap();
+        });
+        $photoInfoClone.removeClass("hidden");
+        $infoBox.append($photoInfoClone);
+    }
 
     var showLightbox = function($album, $thumbnailNodes, nodeIndex, noNavigate) {
         if (!noNavigate) {
@@ -125,18 +145,20 @@ $(document).ready(function() {
             }
         });
 
+        var $infoBox = $lightbox.find(".lightbox-info-box");
+
         var $scrollerNodes = $scroller.find(".album-thumbnail-node");
         $scrollerNodes.click(function(evt) {
             evt.preventDefault();
-            nodeIndex = changeImage($scrollerNodes.index(this) - nodeIndex, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
+            nodeIndex = changeImage($scrollerNodes.index(this) - nodeIndex, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox);
         });
 
-        nodeIndex = changeImage(0, nodeIndex, $scrollerNodes, $lightbox, $image, $album, true);
+        nodeIndex = changeImage(0, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox, true);
 
         $lightbox.find(".navblock").click(function(evt) {
             evt.preventDefault();
             var direction = $(this).hasClass("right") ? 1 : -1;
-            nodeIndex = changeImage(direction, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
+            nodeIndex = changeImage(direction, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox);
         });
 
         var $lightboxClose = $lightbox.find(".lightbox-close");
@@ -149,23 +171,22 @@ $(document).ready(function() {
             if (evt.which == 27) {
                 closeLightbox($lightboxClose, $lightbox, $page);
             } else if (evt.which == 37) {
-                nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
+                nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox);
             } else if (evt.which == 39) {
-                nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
+                nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox);
             }
         });
 
         var $imageContainer = $lightbox.find(".image-container");
         $imageContainer.on("swipeleft",function(){
-            nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
+            nodeIndex = changeImage(1, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox);
         });
 
         $imageContainer.on("swiperight",function(){
-            nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image, $album);
+            nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox);
         });
 
         var $infoButton = $lightbox.find(".lightbox-info-button");
-        var $infoBox = $lightbox.find(".lightbox-info-box");
         var $infoButtonClose = $lightbox.find(".lightbox-info-button-close");
 
         $infoButton.show();
@@ -175,20 +196,7 @@ $(document).ready(function() {
 
         $infoButton.click(function(evt) {
             evt.preventDefault();
-            $infoBox.empty();
-            var $photoInfoClone = $($scrollerNodes[nodeIndex]).find(".photo-info").clone();
-            $photoInfoClone.find("aa").each(function(idx, aAnchor) {
-                var anchor = $("<a></a>")[0];
-                anchor.className = aAnchor.className;
-                $.extend(anchor.classList, aAnchor.classList);
-                $(anchor).attr('href', $(aAnchor).attr('href'));
-                $(anchor).addClass(aAnchor.className);
-                $(aAnchor).wrapAll($(anchor));
-                $(aAnchor).contents().unwrap();
-            });
-            $photoInfoClone.removeClass("hidden");
-            $infoBox.append($photoInfoClone);
-
+            updateInfoBox($infoBox, $scrollerNodes, nodeIndex);
             $infoBox.removeClass("hidden");
             $infoButtonClose.removeClass("hidden");
             $infoButton.hide();
@@ -212,7 +220,8 @@ $(document).ready(function() {
             "getImage": function() { return $image },
             "getAlbum": function() { return $album },
             "getLightboxClose": function() { return $lightboxClose },
-            "getPage": function() { return $page }
+            "getPage": function() { return $page },
+            "getInfoBox": function() { return $infoBox}
         }
     };
 
