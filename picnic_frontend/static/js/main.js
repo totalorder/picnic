@@ -110,6 +110,43 @@ $(document).ready(function() {
             nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image);
         });
 
+        var $infoButton = $lightbox.find(".lightbox-info-button");
+        var $infoBox = $lightbox.find(".lightbox-info-box");
+        var $infoButtonClose = $lightbox.find(".lightbox-info-button-close");
+
+        $infoButton.show();
+        $infoBox.addClass("hidden");
+        $infoButtonClose.addClass("hidden");
+        $infoButton.show();
+
+        $infoButton.click(function(evt) {
+            evt.stopPropagation();
+            $infoBox.empty();
+            var $photoInfoClone = $($scrollerNodes[nodeIndex]).find(".photo-info").clone();
+            $photoInfoClone.find("aa").each(function(idx, aAnchor) {
+                var anchor = $("<a></a>")[0];
+                anchor.className = aAnchor.className;
+                $.extend(anchor.classList, aAnchor.classList);
+                $(anchor).attr('href', $(aAnchor).attr('href'));
+                $(anchor).addClass(aAnchor.className);
+                $(aAnchor).wrapAll($(anchor));
+                $(aAnchor).contents().unwrap();
+            });
+            $photoInfoClone.removeClass("hidden");
+            $infoBox.append($photoInfoClone);
+
+            $infoBox.removeClass("hidden");
+            $infoButtonClose.removeClass("hidden");
+            $infoButton.hide();
+        });
+
+        $infoButtonClose.click(function(evt) {
+            evt.stopPropagation();
+            $infoButton.show();
+            $infoButtonClose.addClass("hidden");
+            $infoBox.addClass("hidden");
+        });
+
         $lightbox.show();
         $page.hide();
     };

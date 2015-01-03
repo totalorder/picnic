@@ -16,7 +16,10 @@
                                {% for photo in album.photos %}
                                    <a class="album-thumbnail-link album-thumbnail-node hidden" href="#"><img
                                        src="{{ FILES_URL }}{{ photo.convert_types.thumbnail }}"
-                                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}" /></a>
+                                       data-size-medium="{{ FILES_URL }}{{ photo.convert_types.medium }}" /><div class="photo-info hidden">
+                                       {{ photo.name }} ({{ photo.date|date:"Y-m-d H:i" }})<br />
+                                       <aa href="{{ FILES_URL }}{{ photo.file }}"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span> Original</aa>
+                                   </div></a>
                                {% endfor %}
                            </div>
                        </div>
@@ -43,6 +46,9 @@
                 </span>
             </div>
             <img src="" class="image" />
+            <span class="lightbox-info-button glyphicon glyphicon-plus" aria-hidden="true"></span>
+            <div class="lightbox-info-box hidden">Asd</div>
+            <span class="lightbox-info-button-close glyphicon glyphicon-minus hidden" aria-hidden="true"></span>
         </div>
         <span class="lightbox-close glyphicon glyphicon-remove" aria-hidden="true"></span>
         <div class="scroller">

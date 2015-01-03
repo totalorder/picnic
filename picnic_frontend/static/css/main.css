@@ -111,6 +111,7 @@ body {
 
 .lightbox .image-container {
     height: 85%;
+    position: relative;
 }
 
 .lightbox-close {
@@ -132,6 +133,68 @@ body {
     opacity: 1;
 }
 
+.lightbox-info-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    top: auto;
+    font-size: 200%;
+    color: lightgray;
+    opacity: 0.5;
+    width: 10%;
+    height: 10%;
+    text-align: right;
+    padding-top: 2%;
+    padding-right: 2%;
+
+}
+
+.lightbox-info-button:hover {
+    opacity: 1;
+}
+
+.lightbox-info-button-close {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    top: auto;
+    font-size: 200%;
+    color: lightgray;
+    opacity: 0.5;
+    width: 10%;
+    height: 10%;
+    text-align: right;
+    padding-top: 2%;
+    padding-right: 2%;
+
+}
+
+.lightbox-info-button-close:hover {
+    opacity: 1;
+}
+
+.lightbox-info-box {
+    padding: 10px;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #606060;
+    /*height: 100px;*/
+}
+
+.photo-info {
+    font-size: 150%;
+}
+
+.photo-info a {
+    color: #999999;
+}
+
+.photo-info .glyphicon {
+    font-size: 80%;
+}
+
 .lightbox-extension {
     display: none;
     height: 10%;
@@ -147,13 +210,13 @@ body {
 
 .navblock {
     width: 49%;
-    height: 80%;
     position: absolute;
     top: 0;
     display:table;
     font-size: 150%;
     opacity: 0.5;
     color: lightgray;
+    height: 100%;
 }
 
 .navblock:hover {
