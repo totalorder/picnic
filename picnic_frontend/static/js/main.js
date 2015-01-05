@@ -1,7 +1,28 @@
 $(document).ready(function() {
-    $("body").addClass((("ontouchstart" in document.documentElement) ? 'touch' : 'no-touch'));
-
     var lightbox = null;
+
+    var launchIntoFullscreen = function(element) {
+        if(element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if(element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if(element.webkitRequestFullscreen) {
+            console.log("fullscreen webkit");
+            element.webkitRequestFullscreen();
+        } else if(element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
+    };
+
+    var exitFullscreen = function () {
+        if(document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if(document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if(document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+    };
 
     var scroll = function (direction, nodeIndex, $scrollerNodes) {
         var nextNodeIndex = nodeIndex;
@@ -59,15 +80,16 @@ $(document).ready(function() {
         }
     };
 
-    var closeLightbox = function ($lightboxClose, $lightbox, $page, noNavigate) {
+    var closeLightbox = function ($lightboxClose, $lightboxFullscreen, $lightbox, $page, noNavigate) {
         $lightbox.find(".scroller-center").empty();
         $lightboxClose.unbind('click');
+        $lightboxFullscreen.unbind('click');
         $lightbox.unbind('click');
         $lightbox.find(".navblock").unbind('click');
         $lightbox.find(".image-container").unbind("swipeleft");
         $lightbox.find(".image-container").unbind("swiperight");
         $(document).unbind('keydown');
-        $page.removeClass("hidden");
+        document.body.style.overflow="visible";
         $lightbox.hide();
         lightbox = null;
         if (!noNavigate) {
@@ -94,7 +116,7 @@ $(document).ready(function() {
         //console.log(evt.originalEvent.state);
         if (evt.originalEvent.state === null) {
             if (lightbox !== null) {
-                closeLightbox(lightbox.getLightboxClose(), lightbox.getLightbox(), lightbox.getPage(), true);
+                closeLightbox(lightbox.getLightboxClose(), lightbox.getLightboxFullscreen(), lightbox.getLightbox(), lightbox.getPage(), true);
             }
         } else if (lightbox !== null && evt.originalEvent.state.albumSlug === lightbox.getAlbum().data('slug')) {
             var evtNodeIndex = evt.originalEvent.state.nodeIndex === null ? 0 : evt.originalEvent.state.nodeIndex;
@@ -163,13 +185,53 @@ $(document).ready(function() {
 
         var $lightboxClose = $lightbox.find(".lightbox-close");
 
+        var $lightboxFullscreen = $lightbox.find(".lightbox-fullscreen");
+        var $lightboxFullscreenGlyph = $lightboxFullscreen.find(".glyphicon");
+
+        var fullscreenChanged = function(evt) {
+            console.log(evt);
+            if (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+                $lightboxFullscreenGlyph.addClass("glyphicon-resize-small");
+                $lightboxFullscreenGlyph.removeClass("glyphicon-resize-full");
+            } else {
+                $lightboxFullscreenGlyph.addClass("glyphicon-resize-full");
+                $lightboxFullscreenGlyph.removeClass("glyphicon-resize-small");
+            }
+        };
+
+        $(document).on("fullscreenchange", function(e) {
+            fullscreenChanged(e);
+        });
+        $(document).on("mozfullscreenchange", function(e) {
+            fullscreenChanged(e);
+        });
+        $(document).on("webkitfullscreenchange", function(e) {
+            fullscreenChanged(e);
+        });
+        $(document).on("msfullscreenchange", function(e) {
+            fullscreenChanged(e);
+        });
+
         $lightboxClose.click(function() {
-            closeLightbox($lightboxClose, $lightbox, $page);
+            closeLightbox($lightboxClose, $lightboxFullscreen, $lightbox, $page);
+        });
+
+        if (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+            $lightboxFullscreenGlyph.addClass("glyphicon-resize-small");
+            $lightboxFullscreenGlyph.removeClass("glyphicon-resize-full");
+        }
+
+        $lightboxFullscreen.click(function() {
+            if (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+                exitFullscreen();
+            } else {
+                launchIntoFullscreen(document.documentElement);
+            }
         });
 
         $(document).keydown(function(evt) {
             if (evt.which == 27) {
-                closeLightbox($lightboxClose, $lightbox, $page);
+                closeLightbox($lightboxClose, $lightboxFullscreen, $lightbox, $page);
             } else if (evt.which == 37) {
                 nodeIndex = changeImage(-1, nodeIndex, $scrollerNodes, $lightbox, $image, $album, $infoBox);
             } else if (evt.which == 39) {
@@ -210,7 +272,7 @@ $(document).ready(function() {
         });
 
         $lightbox.show();
-        $page.addClass("hidden");
+        document.body.style.overflow="hidden";
 
         return {
             "getNodeIndex": function() { return nodeIndex; },
@@ -220,6 +282,7 @@ $(document).ready(function() {
             "getImage": function() { return $image },
             "getAlbum": function() { return $album },
             "getLightboxClose": function() { return $lightboxClose },
+            "getLightboxFullscreen": function() { return $lightboxFullscreen },
             "getPage": function() { return $page },
             "getInfoBox": function() { return $infoBox}
         }

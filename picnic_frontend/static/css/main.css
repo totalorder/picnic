@@ -133,6 +133,27 @@ body {
     opacity: 1;
 }
 
+.lightbox-fullscreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 200%;
+    color: lightgray;
+    opacity: 0.5;
+    width: 10%;
+    height: 10%;
+    padding-top: 2%;
+    padding-left: 2%;
+}
+
+.lightbox-fullscreen .glyphicon {
+    transform: scale(-1, 1);
+}
+
+.lightbox-fullscreen:hover {
+    opacity: 1;
+}
+
 .lightbox-info-button {
     position: absolute;
     bottom: 0;
@@ -180,7 +201,6 @@ body {
     bottom: 0;
     width: 100%;
     background-color: #606060;
-    /*height: 100px;*/
 }
 
 .photo-info {
@@ -206,6 +226,13 @@ body {
 
 .touch .lightbox-extension {
     display: block;
+}
+
+.image-container img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
 }
 
 .navblock {
