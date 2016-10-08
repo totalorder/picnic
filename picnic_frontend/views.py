@@ -2,8 +2,11 @@ from collections import defaultdict
 from datetime import datetime
 from urllib2 import urlopen
 from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import render
 import json
+from zipfile import ZipFile
+from StringIO import StringIO
 
 CATALOG = None
 FILES_URL = settings.CATALOG_URL[:settings.CATALOG_URL.rindex("/") + 1]
@@ -54,3 +57,23 @@ def index(request, album_slug=None, node_index=None):
            "album_slug": album_slug,
            "node_index": int(node_index) - 1 if node_index is not None else None}
     return render(request, "index.html", ctx)
+
+
+def zipfile(request, album_slug):
+    catalog = getCatalog()
+    album = catalog[album_slug]
+
+    inmemory_file = StringIO()
+
+    zip_file = ZipFile(inmemory_file, "w")
+
+    for photo in album["photos"]:
+        response = urlopen(FILES_URL + photo["file"])
+
+        zip_file.writestr(photo["file"], response.read())
+    zip_file.close()
+
+    inmemory_file.seek(0)
+    response = HttpResponse(inmemory_file, content_type="application/zip")
+    response["Content-Disposition"] = "attachment; filename=%s.zip" % album_slug
+    return response

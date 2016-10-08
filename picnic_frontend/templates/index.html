@@ -22,6 +22,9 @@
                                    </div></a>
                                {% endfor %}
                            </div>
+                           <a href="{% url 'zipfile' album_slug=album.name %}" download>
+                               <div class="download-button"><span class="glyphicon glyphicon-save" aria-hidden="true"></span></div>
+                           </a>
                        </div>
                    {% endfor %}
                    <div class="month-title {% if forloop.counter0 == 0 %}first{% endif %}">{{ month.0 }}</div>
