@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 from urllib2 import urlopen
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import StreamingHttpResponse
 from django.shortcuts import render
 import json
 from zipfile import ZipFile
@@ -64,16 +64,23 @@ def zipfile(request, album_slug):
     album = catalog[album_slug]
 
     inmemory_file = StringIO()
-
     zip_file = ZipFile(inmemory_file, "w")
 
-    for photo in album["photos"]:
-        response = urlopen(FILES_URL + photo["file"])
+    def stream():
+        previous_pos = 0
+        for photo in album["photos"]:
+            response = urlopen(FILES_URL + photo["file"])
+            zip_file.writestr(photo["file"], response.read())
+            pos = inmemory_file.tell()
+            inmemory_file.seek(previous_pos)
+            yield inmemory_file.read()
+            previous_pos = pos
+            inmemory_file.seek(pos)
 
-        zip_file.writestr(photo["file"], response.read())
-    zip_file.close()
+        zip_file.close()
+        inmemory_file.seek(previous_pos)
+        yield inmemory_file.read()
 
-    inmemory_file.seek(0)
-    response = HttpResponse(inmemory_file, content_type="application/zip")
+    response = StreamingHttpResponse(stream(), content_type="application/zip")
     response["Content-Disposition"] = "attachment; filename=%s.zip" % album_slug
     return response
