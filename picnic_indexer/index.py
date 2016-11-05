@@ -4,6 +4,8 @@ import os
 from os import listdir, makedirs
 from os.path import join, exists, isdir, basename, isfile, splitext
 from multiprocessing.pool import ThreadPool
+import re
+import unicodedata
 import exifread
 convert_types = {'thumbnail': "-thumbnail 200x200^ -gravity center -extent 200x200",
                  'medium': "-thumbnail 800"}
@@ -11,12 +13,20 @@ file_extensions = {'.png', '.jpeg', '.jpg'}
 
 albums = {}
 
+
+def slugify(value):
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub('[^\w\s-]', '', value).strip().lower()
+    return re.sub('[-\s]+', '-', value)
+
+
 def run(path, reprocess=False):
     convert_jobs = []
     for album_dir in listdir(path):
         if isdir(album_dir):
             album = {
                 'name': basename(album_dir),
+                'slug': slugify(unicode(basename(album_dir), 'utf-8')),
                 'photos': [],
                 'date': None
             }
@@ -77,7 +87,7 @@ def run(path, reprocess=False):
                     convert_jobs.append(command)
 
             if album['photos']:
-                albums[album_dir] = album
+                albums[album['slug']] = album
 
     class Counter:
         def __init__(self):
