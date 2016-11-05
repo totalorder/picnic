@@ -9,12 +9,16 @@ convert_types = {'thumbnail': "-thumbnail 200x200^ -gravity center -extent 200x2
                  'medium': "-thumbnail 800"}
 file_extensions = {'.png', '.jpeg', '.jpg'}
 
-albums = {}
 
 def run(path, reprocess=False):
+    albums = {"catalogs": []}
+
+    print "Indexing %s" % path
     convert_jobs = []
     for album_dir in listdir(path):
-        if isdir(album_dir):
+        full_album_dir = join(path, album_dir)
+        # print "isdir(album_dir)", full_album_dir, isdir(full_album_dir)
+        if isdir(full_album_dir):
             album = {
                 'name': basename(album_dir),
                 'photos': [],
@@ -24,13 +28,16 @@ def run(path, reprocess=False):
             files_to_convert = {}
             for convert_type in convert_types:
                 files_to_convert[convert_type] = []
-                convert_dir = join(album_dir, convert_type)
-                if not exists(convert_dir):
-                    makedirs(convert_dir)
 
-            for file_path in listdir(album_dir):
+            numfiles_in_dir = 0
+            numdirs_in_dir = 0
+            for file_path in listdir(full_album_dir):
                 full_file_path = join(path, album_dir, file_path)
+                # print "isfile(full_file_path)", full_file_path, isfile(full_file_path)
                 if isfile(full_file_path):
+                    if file_path != "catalog.json":
+                        numfiles_in_dir += 1
+
                     lower_extension = splitext(file_path)[1].lower()
                     if lower_extension in file_extensions:
                         photo = {'file': "/".join((album_dir, file_path)),
@@ -57,7 +64,7 @@ def run(path, reprocess=False):
 
                         for convert_type in convert_types:
 
-                            convert_file = join(album_dir, convert_type, basename(file_path))
+                            convert_file = join(path, album_dir, convert_type, basename(file_path))
                             photo['convert_types'][convert_type] = "/".join((album_dir, convert_type, basename(file_path)))
 
                             if reprocess or not exists(convert_file):
@@ -66,18 +73,34 @@ def run(path, reprocess=False):
                     elif file_path == "album.json":
                         with open(full_file_path, "r") as f:
                             album.update(json.load(f))
+                elif isdir(full_file_path):
+                    numdirs_in_dir += 1
 
-            for convert_type, files in files_to_convert.items():
-                for file_path in files:
-                    command = 'convert {input_file} {convert_options} {output_file}'.format(
-                        input_file=join(path, album_dir, file_path).replace(" ", "\ "),
-                        output_file=join(path, album_dir, convert_type, file_path).replace(" ", "\ "),
-                        convert_options=convert_types[convert_type]
-                    )
-                    convert_jobs.append(command)
+            # print album_dir, "numfiles_in_dir", numfiles_in_dir, "numdirs_in_dir", numdirs_in_dir
+            if numfiles_in_dir == 0 and numdirs_in_dir > 0:
+                catalog_path = run(join(path, album_dir))
+                albums["catalogs"].append(catalog_path)
+            else:
+                if numfiles_in_dir > 0:
+                    for convert_type in convert_types:
+                        convert_dir = join(full_album_dir, convert_type)
+                        if not exists(convert_dir):
+                            print files_to_convert
+                            raw_input("%s?" % convert_dir)
+                            makedirs(convert_dir)
 
-            if album['photos']:
-                albums[album_dir] = album
+                for convert_type, files in files_to_convert.items():
+                    for file_path in files:
+                        command = 'convert {input_file} {convert_options} {output_file}'.format(
+                            input_file=join(path, album_dir, file_path).replace(" ", "\ "),
+                            output_file=join(path, album_dir, convert_type, file_path).replace(" ", "\ "),
+                            convert_options=convert_types[convert_type]
+                        )
+                        print command
+                        convert_jobs.append(command)
+
+                if album['photos']:
+                    albums[album_dir] = album
 
     class Counter:
         def __init__(self):
@@ -93,8 +116,10 @@ def run(path, reprocess=False):
         threadpool = ThreadPool(5)
         threadpool.map(parallel, convert_jobs)
 
-    with open("catalog.json", "w") as f:
+    catalog_path = join(path, "catalog.json")
+    with open(catalog_path, "w") as f:
         json.dump(albums, f, sort_keys=True, indent=2)
+    return catalog_path
 
 if __name__ == '__main__':
     run(".", reprocess=False)
